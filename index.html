@@ -43,10 +43,15 @@ input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;bac
 .ticket-box{text-align:center}
 .ticket-num{font-size:58px;font-weight:700;color:#00FF88;line-height:1;font-variant-numeric:tabular-nums}
 .ticket-lbl{font-size:12px;color:#888;letter-spacing:1px;margin-top:4px}
-.ticket-ctl{display:flex;gap:8px;margin-top:14px}
-.ticket-ctl button{flex:1;padding:16px 0;border-radius:11px;font-size:19px;font-weight:700;background:#1E1E1E;color:#fff;border:1px solid #333}
-.ticket-ctl .sold{background:#00C853;color:#fff;flex:2.2;font-size:17px;border:none}
-.undo{background:#1E1E1E;color:#FFD54F;font-size:13px;padding:10px;border:1px solid #333;border-radius:9px;width:100%;margin-top:8px}
+.bundle-row{display:flex;gap:8px;margin-top:14px}
+.bundle-row button{flex:1;padding:16px 0;border-radius:11px;font-size:17px;font-weight:700;background:#1E1E1E;color:#fff;border:1px solid #444}
+.bundle-row button:active{background:#2A2A2A;transform:scale(.96)}
+.sold-big{width:100%;margin-top:8px;padding:20px 0;border:none;border-radius:11px;background:#00C853;color:#fff;font-size:18px;font-weight:700;letter-spacing:.5px}
+.sold-big:active{transform:scale(.97);filter:brightness(1.15)}
+.minor-row{display:flex;gap:8px;margin-top:8px}
+.minor-row button{flex:1;padding:12px 0;border-radius:9px;font-size:14px;font-weight:700;background:#1E1E1E;border:1px solid #333}
+.undo-btn{color:#FFD54F}
+.plus-btn{color:#8BC34A}
 .upload{display:block;width:100%;padding:16px;border-radius:11px;border:2px dashed #3A3A3A;background:#0D0D0D;text-align:center;font-size:14px;color:#999}
 .upload.has{border-color:#00FF88;border-style:solid;color:#00FF88}
 .upload input{display:none}
@@ -99,7 +104,6 @@ body.pulseOn .pulse{animation:glow 2.4s ease-in-out infinite}
 .qr-side{display:flex;flex-direction:column;gap:1.4vh;max-width:48vw}
 .qr-head{font-size:8vw;font-weight:700;color:var(--hl);line-height:1.05}
 .qr-sub{font-size:4.2vw;color:var(--bd);opacity:.85;line-height:1.3}
-.qr-none{font-size:5vw;color:var(--bd);opacity:.6;text-align:center}
 #sGif{padding:0}
 #sGif img{max-width:100%;max-height:100%;object-fit:contain}
 .fallback{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
@@ -114,9 +118,12 @@ body.pulseOn .pulse{animation:glow 2.4s ease-in-out infinite}
 #hudClock .n{font-size:5.4vw;font-weight:700;color:var(--hl);line-height:1}
 #hudClock .l{font-size:2.2vw;color:var(--bd);opacity:.7;letter-spacing:1.2px}
 #hudBatt{bottom:1.6vh;right:2.6vw;font-size:2.6vw;color:var(--bd);opacity:.45}
-#soldHit{position:absolute;left:0;bottom:0;width:26vw;height:26vh;z-index:30;background:transparent;border:none}
-#soldHit::after{content:'';position:absolute;left:2.6vw;bottom:1.6vh;width:2.4vh;height:2.4vh;border-radius:50%;background:var(--ac);opacity:.25}
-#exitHit{position:absolute;right:0;top:0;width:22vw;height:22vh;z-index:30;background:transparent;border:none}
+.hit{position:absolute;z-index:30;background:transparent;border:none;padding:0}
+#hit1{left:0;bottom:0;width:24vw;height:30vh}
+#hit1::after{content:'1';position:absolute;left:3vw;bottom:2vh;width:5vh;height:5vh;line-height:5vh;border-radius:50%;background:var(--ac);opacity:.22;color:var(--bg);font-size:2.6vh;font-weight:700;text-align:center}
+#hit5{left:24vw;bottom:0;width:22vw;height:30vh}
+#hit5::after{content:'5';position:absolute;left:3vw;bottom:2vh;width:5vh;height:5vh;line-height:5vh;border-radius:50%;background:var(--ac);opacity:.22;color:var(--bg);font-size:2.6vh;font-weight:700;text-align:center}
+#exitHit{right:0;top:0;width:22vw;height:22vh}
 #flash{position:absolute;inset:0;background:#00FF88;opacity:0;z-index:40;pointer-events:none;transition:opacity .18s}
 #flash.go{opacity:.4}
 #toast{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.9);background:rgba(0,0,0,.88);color:#00FF88;padding:2vh 5vw;border-radius:2vw;font-size:6vw;font-weight:700;opacity:0;z-index:45;pointer-events:none;transition:opacity .2s,transform .2s}
@@ -159,48 +166,59 @@ body.pulseOn .pulse{animation:glow 2.4s ease-in-out infinite}
       <div class="ticket-num" id="tNum">500</div>
       <div class="ticket-lbl">OF <span id="tTot">500</span> REMAINING</div>
     </div>
-    <div class="ticket-ctl">
-      <button id="bMinus">&minus;1</button>
-      <button class="sold" id="bSold">SOLD</button>
-      <button id="bPlus">+1</button>
+
+    <div class="bundle-row">
+      <button id="bM1">&minus;1</button>
+      <button id="bM3">&minus;3</button>
+      <button id="bM5">&minus;5</button>
     </div>
-    <button class="undo" id="bUndo">&#8630; Undo last</button>
-    <label>Total tickets</label>
+
+    <button class="sold-big" id="bSold">SOLD &mdash; 1 TICKET</button>
+
+    <div class="minor-row">
+      <button class="undo-btn" id="bUndo">&#8630; UNDO</button>
+      <button class="plus-btn" id="bP1">+1</button>
+    </div>
+
+    <label>Total tickets in the raffle</label>
     <input type="text" id="iTotal" inputmode="numeric" value="500">
     <button class="btn btn-dark" id="bReset" style="margin-top:10px">Reset to full</button>
   </div>
 
   <div class="card">
     <h2>Scrolling Message</h2>
-    <textarea id="iMsg">&#9733; WIN A BRAND NEW TAYLORMADE SIM2 MAX DRIVER &#9733; WORTH &pound;279 &#9733; 5 TICKETS FOR &pound;5 &#9733; FREE DELIVERY TO YOUR DOOR &#9733; DRAWN 1PM &#9733;</textarea>
+    <textarea id="iMsg"></textarea>
     <label>Scroll speed</label>
     <div class="slider-row">
       <input type="range" id="sSpeed" min="10" max="45" value="24">
       <div class="slider-val" id="vSpeed">24s</div>
     </div>
+    <p style="font-size:12px;color:#777;margin-top:8px">Lower number = faster scroll.</p>
   </div>
 
   <div class="card">
     <h2>The Prize</h2>
     <label>Headline</label>
-    <input type="text" id="iPrizeName" value="TAYLORMADE SIM2 MAX DRIVER">
+    <input type="text" id="iPrizeName">
     <label>Spec line</label>
-    <input type="text" id="iPrizeSpec" value="10.5&deg; LOFT &middot; REGULAR SHAFT &middot; RIGHT HANDED">
+    <input type="text" id="iPrizeSpec">
     <label>Value line</label>
-    <input type="text" id="iPrizeWorth" value="WORTH &pound;279 &middot; BRAND NEW">
+    <input type="text" id="iPrizeWorth">
   </div>
 
   <div class="card">
     <h2>Ticket Prices</h2>
     <label>Single ticket</label>
-    <input type="text" id="iP1" value="&pound;2">
+    <input type="text" id="iP1">
     <label>3 tickets</label>
-    <input type="text" id="iP3" value="&pound;4.50">
+    <input type="text" id="iP3">
+    <label>Saving shown on the 3-pack</label>
+    <input type="text" id="iSave3">
     <label>5 tickets (best value)</label>
-    <input type="text" id="iP5" value="&pound;5">
+    <input type="text" id="iP5">
     <label>Badge on the 5-ticket deal</label>
-    <input type="text" id="iBadge" value="BEST VALUE &middot; &pound;1 EACH">
-    <p style="font-size:12px;color:#777;margin-top:10px;line-height:1.4">The 5-pack shows a crossed-out &pound;10 so people see the saving straight away.</p>
+    <input type="text" id="iBadge">
+    <p style="font-size:12px;color:#777;margin-top:10px;line-height:1.4">The 5-pack automatically shows a crossed-out price based on 5 singles, so people see the saving instantly.</p>
   </div>
 
   <div class="card">
@@ -221,9 +239,9 @@ body.pulseOn .pulse{animation:glow 2.4s ease-in-out infinite}
     <div class="preview" id="pvQR"><img id="imgQR" alt=""><br>
       <span class="clear-link" id="clrQR">Remove</span></div>
     <label>Heading next to QR</label>
-    <input type="text" id="iQRhead" value="SCAN TO PAY">
+    <input type="text" id="iQRhead">
     <label>Line underneath</label>
-    <input type="text" id="iQRsub" value="Then see me for your ticket numbers">
+    <input type="text" id="iQRsub">
   </div>
 
   <div class="card">
@@ -234,14 +252,14 @@ body.pulseOn .pulse{animation:glow 2.4s ease-in-out infinite}
     </label>
     <div class="preview" id="pvGif"><img id="imgGif" alt=""><br>
       <span class="clear-link" id="clrGif">Remove</span></div>
-    <label>Words if no GIF loaded</label>
-    <input type="text" id="iGifTxt" value="300 YARDS. EASY.">
+    <label>Words shown if no GIF loaded</label>
+    <input type="text" id="iGifTxt">
   </div>
 
   <div class="card">
     <h2>How Long Each Screen Shows</h2>
     <label>Scrolling message</label>
-    <div class="slider-row"><input type="range" id="dMsg" min="4" max="40" value="16">
+    <div class="slider-row"><input type="range" id="dMsg" min="0" max="40" value="16">
       <div class="slider-val" id="vMsg">16s</div></div>
     <label>The prize</label>
     <div class="slider-row"><input type="range" id="dPrize" min="0" max="30" value="8">
@@ -255,7 +273,7 @@ body.pulseOn .pulse{animation:glow 2.4s ease-in-out infinite}
     <label>QR code</label>
     <div class="slider-row"><input type="range" id="dQR" min="0" max="40" value="10">
       <div class="slider-val" id="vQR">10s</div></div>
-    <p style="font-size:12px;color:#777;margin-top:8px">Set any slider to 0 to skip that screen.</p>
+    <p style="font-size:12px;color:#777;margin-top:8px">Set any slider to 0 to skip that screen entirely.</p>
   </div>
 
   <div class="card">
@@ -269,6 +287,12 @@ body.pulseOn .pulse{animation:glow 2.4s ease-in-out infinite}
     <div class="toggle-row">
       <div class="t-label">Show battery<small>Small, bottom right</small></div>
       <div class="switch on" id="swBatt"></div></div>
+  </div>
+
+  <div class="card">
+    <h2>Start Fresh</h2>
+    <button class="btn btn-dark" id="bWipe" style="color:#FF5252">Reset everything to defaults</button>
+    <p style="font-size:12px;color:#777;margin-top:10px">Clears all your text, images and settings.</p>
   </div>
 </div>
 
@@ -296,7 +320,7 @@ body.pulseOn .pulse{animation:glow 2.4s ease-in-out infinite}
       <div class="price-cell">
         <div class="qty">3 TICKETS</div>
         <div class="amt" id="dP3"></div>
-        <div class="save">SAVE 50p</div>
+        <div class="save" id="dSave3"></div>
       </div>
       <div class="price-cell best">
         <div class="best-tag pulse" id="dBadge"></div>
@@ -327,14 +351,16 @@ body.pulseOn .pulse{animation:glow 2.4s ease-in-out infinite}
   <div class="hud" id="hudTickets"><div class="n" id="hudTnum">500</div><div class="l">TICKETS LEFT</div></div>
   <div class="hud" id="hudBatt">&mdash;</div>
 
-  <button id="soldHit" aria-label="Log a sale"></button>
-  <button id="exitHit" aria-label="Back to settings"></button>
+  <button class="hit" id="hit1" aria-label="Sell one ticket"></button>
+  <button class="hit" id="hit5" aria-label="Sell five tickets"></button>
+  <button class="hit" id="exitHit" aria-label="Back to settings"></button>
+
   <div id="flash"></div>
   <div id="toast"></div>
 
   <div id="soldOut">
     <div class="so-big pulse">SOLD OUT</div>
-    <div class="so-sub" id="soSub">All tickets gone &mdash; draw at 1PM</div>
+    <div class="so-sub" id="soSub">All tickets gone</div>
   </div>
 </div>
 
@@ -342,14 +368,13 @@ body.pulseOn .pulse{animation:glow 2.4s ease-in-out infinite}
   <div class="ph"></div>
   <p>Turn the phone <b style="color:#00FF88">upright</b><br>to change settings</p>
 </div>
-
 <script>
 (function(){
 "use strict";
 
 var $ = function(id){ return document.getElementById(id); };
 
-/* ---------- DEFAULTS ---------- */
+/* ---------- DEFAULT SETTINGS ---------- */
 var DEF = {
   theme:'A', total:500, left:500,
   msg:'\u2605 WIN A BRAND NEW TAYLORMADE SIM2 MAX DRIVER \u2605 WORTH \u00A3279 \u2605 5 TICKETS FOR \u00A35 \u2605 FREE DELIVERY TO YOUR DOOR \u2605 DRAWN 1PM \u2605',
@@ -358,6 +383,7 @@ var DEF = {
   prizeSpec:'10.5\u00B0 LOFT \u00B7 REGULAR SHAFT \u00B7 RIGHT HANDED',
   prizeWorth:'WORTH \u00A3279 \u00B7 BRAND NEW',
   p1:'\u00A32', p3:'\u00A34.50', p5:'\u00A35',
+  save3:'SAVE 50p',
   badge:'BEST VALUE \u00B7 \u00A31 EACH',
   draw:'13:00',
   qrHead:'SCAN TO PAY', qrSub:'Then see me for your ticket numbers',
@@ -367,14 +393,20 @@ var DEF = {
   pulse:true, showTickets:true, showBatt:true, showClock:true
 };
 
+/* ---------- LOAD SAVED SETTINGS ---------- */
 var S = {};
-try {
-  var raw = localStorage.getItem('raffleApp');
-  var saved = raw ? JSON.parse(raw) : {};
-  for (var k in DEF) { S[k] = (saved[k] !== undefined) ? saved[k] : DEF[k]; }
-} catch(e) {
-  for (var k2 in DEF) { S[k2] = DEF[k2]; }
+function loadState(){
+  S = {};
+  var saved = {};
+  try {
+    var raw = localStorage.getItem('raffleApp');
+    if (raw) saved = JSON.parse(raw);
+  } catch(e) { saved = {}; }
+  for (var k in DEF) {
+    S[k] = (saved[k] !== undefined && saved[k] !== null) ? saved[k] : DEF[k];
+  }
 }
+loadState();
 
 var saveT = null;
 function save(){
@@ -409,42 +441,67 @@ function applyTheme(){
   }
 })();
 
-/* ---------- TICKETS ---------- */
+/* ---------- TICKET COUNTER ---------- */
 function paintTickets(){
   $('tNum').textContent = S.left;
   $('tTot').textContent = S.total;
   $('hudTnum').textContent = S.left;
   $('soldOut').classList.toggle('show', S.left <= 0);
-  $('soSub').innerHTML = 'All tickets gone &mdash; draw at ' + fmtDraw();
+  $('soSub').textContent = 'All tickets gone \u2014 draw at ' + fmtDraw();
 }
 function setLeft(n, remember){
-  if (remember) { undoStack.push(S.left); if (undoStack.length > 30) undoStack.shift(); }
+  if (remember) {
+    undoStack.push(S.left);
+    if (undoStack.length > 40) undoStack.shift();
+  }
   S.left = Math.max(0, Math.min(S.total, n));
   paintTickets(); save();
 }
-function buzz(ms){ if (navigator.vibrate) { try { navigator.vibrate(ms || 40); } catch(e){} } }
+function buzz(ms){
+  if (navigator.vibrate) { try { navigator.vibrate(ms || 40); } catch(e){} }
+}
 
-$('bMinus').addEventListener('click', function(){ setLeft(S.left - 1, true); buzz(); });
-$('bPlus').addEventListener('click',  function(){ setLeft(S.left + 1, true); buzz(); });
-$('bSold').addEventListener('click',  function(){ setLeft(S.left - 1, true); buzz(60); });
-$('bUndo').addEventListener('click',  function(){
-  if (undoStack.length) { S.left = undoStack.pop(); paintTickets(); save(); buzz(); }
+$('bM1').addEventListener('click', function(){ setLeft(S.left - 1, true); buzz(40); });
+$('bM3').addEventListener('click', function(){ setLeft(S.left - 3, true); buzz(55); });
+$('bM5').addEventListener('click', function(){ setLeft(S.left - 5, true); buzz(70); });
+$('bP1').addEventListener('click', function(){ setLeft(S.left + 1, true); buzz(30); });
+$('bSold').addEventListener('click', function(){ setLeft(S.left - 1, true); buzz(60); });
+
+$('bUndo').addEventListener('click', function(){
+  if (undoStack.length) {
+    S.left = undoStack.pop();
+    paintTickets(); save(); buzz(40);
+  }
 });
+
 $('bReset').addEventListener('click', function(){
-  if (confirm('Reset tickets back to ' + S.total + '?')) { setLeft(S.total, true); }
+  if (confirm('Reset tickets back to ' + S.total + '?')) setLeft(S.total, true);
 });
+
 $('iTotal').addEventListener('input', function(e){
   var v = parseInt(e.target.value.replace(/\D/g,''), 10) || 0;
-  S.total = v; if (S.left > v) S.left = v;
+  S.total = v;
+  if (S.left > v) S.left = v;
   paintTickets(); save();
+});
+
+$('bWipe').addEventListener('click', function(){
+  if (confirm('Wipe everything and start again?\n\nThis clears your text, images and settings.')) {
+    try { localStorage.removeItem('raffleApp'); } catch(e){}
+    location.reload();
+  }
 });
 
 /* ---------- TEXT FIELDS ---------- */
 function field(inputId, key, after){
   var el = $(inputId);
+  if (!el) return;
   el.value = S[key];
   el.addEventListener('input', function(){
-    S[key] = el.value; paintDisplay(); if (after) after(); save();
+    S[key] = el.value;
+    paintDisplay();
+    if (after) after();
+    save();
   });
 }
 field('iMsg','msg');
@@ -453,16 +510,18 @@ field('iPrizeSpec','prizeSpec');
 field('iPrizeWorth','prizeWorth');
 field('iP1','p1');
 field('iP3','p3');
+field('iSave3','save3');
 field('iP5','p5');
 field('iBadge','badge');
 field('iQRhead','qrHead');
 field('iQRsub','qrSub');
 field('iGifTxt','gifTxt');
-field('iDraw','draw', paintClock);
+field('iDraw','draw', function(){ paintClock(); paintTickets(); });
 
 /* ---------- SLIDERS ---------- */
 function slider(rangeId, valId, key, after){
   var el = $(rangeId), lbl = $(valId);
+  if (!el) return;
   el.value = S[key];
   lbl.textContent = S[key] + 's';
   el.addEventListener('input', function(){
@@ -484,6 +543,7 @@ slider('dQR','vQR','dQR', buildPlaylist);
 /* ---------- TOGGLES ---------- */
 function toggle(swId, key, after){
   var el = $(swId);
+  if (!el) return;
   el.classList.toggle('on', !!S[key]);
   el.addEventListener('click', function(){
     S[key] = !S[key];
@@ -497,9 +557,9 @@ toggle('swPulse','pulse', function(){
 });
 toggle('swTickets','showTickets', paintHud);
 toggle('swBatt','showBatt', paintHud);
-toggle('swClock','showClock', paintHud);
+toggle('swClock','showClock', function(){ paintHud(); paintClock(); });
 
-/* ---------- FILE UPLOADS ---------- */
+/* ---------- IMAGE UPLOADS ---------- */
 function hookUpload(fileId, key, boxId, txtId, prevId, imgId, clearId, idleText){
   function paint(){
     var has = !!S[key];
@@ -512,18 +572,21 @@ function hookUpload(fileId, key, boxId, txtId, prevId, imgId, clearId, idleText)
     var f = e.target.files[0];
     if (!f) return;
     if (f.size > 3 * 1024 * 1024) {
-      alert('That file is ' + (f.size/1048576).toFixed(1) + 'MB.\n\nThis phone will struggle. Please use one under 2MB.');
-      e.target.value = ''; return;
+      alert('That file is ' + (f.size/1048576).toFixed(1) + 'MB.\n\nThis phone will struggle with it. Please use one under 2MB.');
+      e.target.value = '';
+      return;
     }
     var r = new FileReader();
     r.onload = function(ev){
       S[key] = ev.target.result;
       paint(); paintDisplay(); save();
     };
+    r.onerror = function(){ alert('Could not read that file. Try another one.'); };
     r.readAsDataURL(f);
   });
   $(clearId).addEventListener('click', function(){
-    S[key] = ''; $(fileId).value = '';
+    S[key] = '';
+    $(fileId).value = '';
     paint(); paintDisplay(); save();
   });
   paint();
@@ -533,24 +596,29 @@ hookUpload('fGif','gifData','upGif','upGiftxt','pvGif','imgGif','clrGif','Tap to
 
 /* ---------- PAINT THE DISPLAY ---------- */
 function paintDisplay(){
-  $('dMsgTxt').textContent    = S.msg;
-  $('dPrizeName').textContent = S.prizeName;
-  $('dPrizeSpec').textContent = S.prizeSpec;
-  $('dPrizeWorth').textContent= S.prizeWorth;
-  $('dP1').textContent        = S.p1;
-  $('dP3').textContent        = S.p3;
-  $('dP5').textContent        = S.p5;
-  $('dBadge').textContent     = S.badge;
-  $('dQRhead').textContent    = S.qrHead;
-  $('dQRsub').textContent     = S.qrSub;
-  $('dGifTxt').textContent    = S.gifTxt;
+  $('dMsgTxt').textContent     = S.msg;
+  $('dPrizeName').textContent  = S.prizeName;
+  $('dPrizeSpec').textContent  = S.prizeSpec;
+  $('dPrizeWorth').textContent = S.prizeWorth;
+  $('dP1').textContent         = S.p1;
+  $('dP3').textContent         = S.p3;
+  $('dSave3').textContent      = S.save3;
+  $('dP5').textContent         = S.p5;
+  $('dBadge').textContent      = S.badge;
+  $('dQRhead').textContent     = S.qrHead;
+  $('dQRsub').textContent      = S.qrSub;
+  $('dGifTxt').textContent     = S.gifTxt;
   $('sMsg').style.setProperty('--dur', S.speed + 's');
 
-  /* crossed-out anchor price: 5 x single price */
-  var single = parseFloat(String(S.p1).replace(/[^0-9.]/g,'')) || 0;
-  $('dWas').textContent = single ? '\u00A3' + (single * 5).toFixed(2).replace(/\.00$/,'') : '';
+  /* crossed-out anchor = 5 singles */
+  var single = parseFloat(String(S.p1).replace(/[^0-9.]/g,''));
+  if (single > 0) {
+    var anchor = (single * 5).toFixed(2).replace(/\.00$/,'');
+    $('dWas').textContent = '\u00A3' + anchor;
+  } else {
+    $('dWas').textContent = '';
+  }
 
-  /* QR */
   if (S.qrData) {
     $('dQRimg').src = S.qrData;
     $('dQRimg').style.display = '';
@@ -558,7 +626,6 @@ function paintDisplay(){
     $('dQRimg').style.display = 'none';
   }
 
-  /* GIF */
   if (S.gifData) {
     $('dGifImg').src = S.gifData;
     $('dGifImg').style.display = '';
@@ -577,41 +644,52 @@ function paintHud(){
 
 /* ---------- COUNTDOWN ---------- */
 function fmtDraw(){
-  var p = S.draw.split(':');
-  var h = parseInt(p[0],10), m = p[1];
+  var p = String(S.draw).split(':');
+  var h = parseInt(p[0],10);
+  var m = p[1] || '00';
+  if (isNaN(h)) return '1PM';
   var ap = h >= 12 ? 'PM' : 'AM';
-  var h12 = h % 12; if (h12 === 0) h12 = 12;
+  var h12 = h % 12;
+  if (h12 === 0) h12 = 12;
   return (m === '00') ? (h12 + ap) : (h12 + ':' + m + ap);
 }
+
 function paintClock(){
   if (!S.showClock) return;
+  var p = String(S.draw).split(':');
+  var hh = parseInt(p[0],10), mm = parseInt(p[1],10);
+  if (isNaN(hh) || isNaN(mm)) return;
+
   var now = new Date();
-  var p = S.draw.split(':');
   var target = new Date();
-  target.setHours(parseInt(p[0],10), parseInt(p[1],10), 0, 0);
+  target.setHours(hh, mm, 0, 0);
   var diff = target - now;
 
+  var nEl = $('clockN');
+  var lEl = $('hudClock').querySelector('.l');
+
   if (diff <= 0) {
-    $('clockN').textContent = fmtDraw();
-    $('hudClock').querySelector('.l').textContent = 'DRAW TIME';
+    nEl.textContent = fmtDraw();
+    lEl.textContent = 'DRAW TIME';
     return;
   }
-  var mins = Math.floor(diff / 60000);
-  var hrs = Math.floor(mins / 60);
-  var rem = mins % 60;
-  var secs = Math.floor((diff % 60000) / 1000);
+
+  var totalSec = Math.floor(diff / 1000);
+  var hrs  = Math.floor(totalSec / 3600);
+  var mins = Math.floor((totalSec % 3600) / 60);
+  var secs = totalSec % 60;
 
   if (hrs > 0) {
-    $('clockN').textContent = hrs + 'h ' + (rem < 10 ? '0' : '') + rem + 'm';
+    nEl.textContent = hrs + 'h ' + (mins < 10 ? '0' : '') + mins + 'm';
   } else {
-    $('clockN').textContent = rem + ':' + (secs < 10 ? '0' : '') + secs;
+    nEl.textContent = mins + ':' + (secs < 10 ? '0' : '') + secs;
   }
-  $('hudClock').querySelector('.l').textContent = 'UNTIL DRAW';
+  lEl.textContent = 'UNTIL DRAW';
 }
 setInterval(paintClock, 1000);
 
 /* ---------- BATTERY ---------- */
-function initBattery(){
+(function initBattery(){
   if (!navigator.getBattery) { $('hudBatt').textContent = ''; return; }
   navigator.getBattery().then(function(b){
     function upd(){
@@ -621,10 +699,9 @@ function initBattery(){
     b.addEventListener('levelchange', upd);
     b.addEventListener('chargingchange', upd);
   }).catch(function(){ $('hudBatt').textContent = ''; });
-}
-initBattery();
+})();
 
-/* ---------- PLAYLIST ---------- */
+/* ---------- SCENE PLAYLIST ---------- */
 var scenes = [];
 var idx = 0;
 var sceneTimer = null;
@@ -635,7 +712,7 @@ function buildPlaylist(){
   if (S.dPrize > 0) scenes.push({el:'sPrize', dur:S.dPrize});
   if (S.dPrice > 0) scenes.push({el:'sPrice', dur:S.dPrice});
   if (S.dGif   > 0) scenes.push({el:'sGif',   dur:S.dGif});
-  if (S.dQR    > 0) scenes.push({el:'sQR',    dur:S.dQR});
+  if (S.dQR    > 0 && S.qrData) scenes.push({el:'sQR', dur:S.dQR});
   if (!scenes.length) scenes.push({el:'sMsg', dur:16});
   if (idx >= scenes.length) idx = 0;
 }
@@ -643,16 +720,14 @@ function buildPlaylist(){
 function showScene(i){
   var all = document.querySelectorAll('.scene');
   for (var j=0;j<all.length;j++) all[j].classList.remove('live');
-  var s = scenes[i];
-  if (!s) return;
-  $(s.el).classList.add('live');
+  if (scenes[i]) $(scenes[i].el).classList.add('live');
 }
 
 function runLoop(){
   clearTimeout(sceneTimer);
   if (!document.body.classList.contains('showing')) return;
   showScene(idx);
-  var dur = scenes[idx] ? scenes[idx].dur : 10;
+  var dur = scenes[idx] ? scenes[idx].dur : 12;
   sceneTimer = setTimeout(function(){
     idx = (idx + 1) % scenes.length;
     runLoop();
@@ -663,10 +738,12 @@ function runLoop(){
 var wakeLock = null;
 function requestWake(){
   if (!('wakeLock' in navigator)) return;
-  navigator.wakeLock.request('screen').then(function(wl){
-    wakeLock = wl;
-    wl.addEventListener('release', function(){ wakeLock = null; });
-  }).catch(function(){});
+  try {
+    navigator.wakeLock.request('screen').then(function(wl){
+      wakeLock = wl;
+      wl.addEventListener('release', function(){ wakeLock = null; });
+    }).catch(function(){});
+  } catch(e){}
 }
 document.addEventListener('visibilitychange', function(){
   if (document.visibilityState === 'visible' && document.body.classList.contains('showing')) {
@@ -674,10 +751,9 @@ document.addEventListener('visibilitychange', function(){
   }
 });
 
-/* ---------- MODE SWITCHING ---------- */
-function isLandscape(){
-  return window.innerWidth > window.innerHeight;
-}
+/* ---------- PORTRAIT / LANDSCAPE SWITCH ---------- */
+function isLandscape(){ return window.innerWidth > window.innerHeight; }
+
 function updateMode(){
   var land = isLandscape();
   document.body.classList.toggle('showing', land);
@@ -696,29 +772,29 @@ function updateMode(){
   }
 }
 window.addEventListener('resize', updateMode);
-window.addEventListener('orientationchange', function(){ setTimeout(updateMode, 220); });
+window.addEventListener('orientationchange', function(){ setTimeout(updateMode, 250); });
 
 $('goBtn').addEventListener('click', function(){
-  if (isLandscape()) { updateMode(); }
-  else { alert('Turn the phone sideways \u2014 the display starts on its own.'); }
+  if (isLandscape()) updateMode();
+  else alert('Turn the phone sideways \u2014 the display starts on its own.');
 });
 
-/* ---------- IN-DISPLAY CONTROLS ---------- */
-$('soldHit').addEventListener('click', function(ev){
-  ev.stopPropagation();
+/* ---------- IN-DISPLAY TAP ZONES ---------- */
+function flashSale(n){
   if (S.left <= 0) return;
-  setLeft(S.left - 1, true);
-  buzz(60);
+  setLeft(S.left - n, true);
+  buzz(n > 1 ? 70 : 50);
   var f = $('flash');
   f.classList.add('go');
   setTimeout(function(){ f.classList.remove('go'); }, 180);
   var t = $('toast');
   t.textContent = S.left + ' LEFT';
   t.classList.add('show');
-  setTimeout(function(){ t.classList.remove('show'); }, 900);
-});
+  setTimeout(function(){ t.classList.remove('show'); }, 950);
+}
+$('hit1').addEventListener('click', function(ev){ ev.stopPropagation(); flashSale(1); });
+$('hit5').addEventListener('click', function(ev){ ev.stopPropagation(); flashSale(5); });
 
-/* exit = double tap top-right */
 var lastExit = 0;
 $('exitHit').addEventListener('click', function(ev){
   ev.stopPropagation();
@@ -732,7 +808,7 @@ $('exitHit').addEventListener('click', function(ev){
   }
 });
 
-/* double-tap anywhere = switch theme */
+/* double-tap anywhere on the display = swap theme */
 var lastTap = 0;
 $('display').addEventListener('click', function(){
   var now = Date.now();
@@ -742,14 +818,14 @@ $('display').addEventListener('click', function(){
     var t = $('toast');
     t.textContent = (S.theme === 'A') ? 'NIGHT' : 'DAY';
     t.classList.add('show');
-    setTimeout(function(){ t.classList.remove('show'); }, 700);
+    setTimeout(function(){ t.classList.remove('show'); }, 750);
     lastTap = 0;
   } else {
     lastTap = now;
   }
 });
 
-/* ---------- START ---------- */
+/* ---------- START UP ---------- */
 applyTheme();
 document.body.classList.toggle('pulseOn', S.pulse);
 paintTickets();
@@ -763,3 +839,5 @@ updateMode();
 </script>
 </body>
 </html>
+
+

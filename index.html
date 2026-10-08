@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0A0A0A">
+<meta name="mobile-web-app-capable" content="yes">
+<title>Raffle Display</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;width:100%;overflow:hidden;font-family:'Atkinson Hyperlegible',system-ui,sans-serif;background:#0A0A0A;color:#fff;-webkit-font-smoothing:antialiased}
+button,input,textarea{font-family:inherit}
+:root{--bg:#0A0A0A;--hl:#FFE500;--ac:#00FF88;--bd:#FFFFFF}
+body.themeB{--bg:#00703C;--hl:#FFFFFF;--ac:#FFE500;--bd:#FFFFFF}
+
+#panel{position:fixed;inset:0;overflow-y:auto;background:#0A0A0A;padding:16px 14px 100px;-webkit-overflow-scrolling:touch}
+#panel h1{font-size:21px;font-weight:700;color:#FFE500;margin-bottom:3px}
+#panel .sub{font-size:13px;color:#888;margin-bottom:16px;line-height:1.4}
+.card{background:#141414;border:1px solid #2A2A2A;border-radius:14px;padding:14px;margin-bottom:12px}
+.card h2{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:#00FF88;margin-bottom:12px}
+label{display:block;font-size:13px;color:#BBB;margin:12px 0 5px}
+label:first-of-type{margin-top:0}
+input[type=text],textarea,input[type=time]{width:100%;background:#000;border:1px solid #333;border-radius:9px;padding:11px 12px;color:#fff;font-size:16px}
+textarea{resize:vertical;min-height:70px;line-height:1.45}
+input:focus,textarea:focus{outline:none;border-color:#00FF88}
+.slider-row{display:flex;align-items:center;gap:12px}
+.slider-val{min-width:64px;text-align:right;font-weight:700;font-size:15px;color:#00FF88;font-variant-numeric:tabular-nums}
+input[type=range]{flex:1;-webkit-appearance:none;height:34px;background:transparent}
+input[type=range]::-webkit-slider-runnable-track{height:8px;border-radius:4px;background:#333}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;border-radius:50%;background:#00FF88;border:3px solid #0A0A0A;margin-top:-11px;box-shadow:0 2px 8px rgba(0,255,136,.45)}
+input[type=range]::-moz-range-track{height:8px;border-radius:4px;background:#333}
+input[type=range]::-moz-range-thumb{width:30px;height:30px;border-radius:50%;background:#00FF88;border:3px solid #0A0A0A}
+.btn{display:block;width:100%;padding:15px;border:none;border-radius:11px;font-weight:700;font-size:16px;transition:transform .08s}
+.btn:active{transform:scale(.97)}
+.btn-dark{background:#1E1E1E;color:#fff;border:1px solid #333}
+.theme-grid{display:flex;gap:10px}
+.theme-opt{flex:1;border-radius:11px;padding:16px 8px;border:3px solid #333;text-align:center;font-size:13px;font-weight:700;line-height:1.3}
+.theme-opt span{display:block;font-size:10px;font-weight:400;opacity:.65;margin-top:3px}
+.theme-a{background:#0A0A0A;color:#FFE500}
+.theme-b{background:#00703C;color:#fff}
+.theme-opt.active{border-color:#00FF88}
+.ticket-box{text-align:center}
+.ticket-num{font-size:58px;font-weight:700;color:#00FF88;line-height:1;font-variant-numeric:tabular-nums}
+.ticket-lbl{font-size:12px;color:#888;letter-spacing:1px;margin-top:4px}
+.ticket-ctl{display:flex;gap:8px;margin-top:14px}
+.ticket-ctl button{flex:1;padding:16px 0;border-radius:11px;font-size:19px;font-weight:700;background:#1E1E1E;color:#fff;border:1px solid #333}
+.ticket-ctl .sold{background:#00C853;color:#fff;flex:2.2;font-size:17px;border:none}
+.undo{background:#1E1E1E;color:#FFD54F;font-size:13px;padding:10px;border:1px solid #333;border-radius:9px;width:100%;margin-top:8px}
+.upload{display:block;width:100%;padding:16px;border-radius:11px;border:2px dashed #3A3A3A;background:#0D0D0D;text-align:center;font-size:14px;color:#999}
+.upload.has{border-color:#00FF88;border-style:solid;color:#00FF88}
+.upload input{display:none}
+.preview{margin-top:10px;display:none;text-align:center}
+.preview.show{display:block}
+.preview img{max-width:100%;max-height:120px;border-radius:9px;background:#fff;padding:4px}
+.clear-link{display:inline-block;margin-top:8px;font-size:12px;color:#FF5252;text-decoration:underline}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #1E1E1E}
+.toggle-row:last-child{border-bottom:none}
+.t-label{font-size:14px;color:#DDD}
+.t-label small{display:block;font-size:11px;color:#777;margin-top:2px}
+.switch{position:relative;width:52px;height:30px;flex-shrink:0;background:#333;border-radius:15px;transition:background .2s}
+.switch.on{background:#00C853}
+.switch::after{content:'';position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:transform .2s}
+.switch.on::after{transform:translateX(22px)}
+.warn{background:#2A1F00;border:1px solid #5A4000;border-radius:11px;padding:13px;margin-bottom:12px;font-size:13px;line-height:1.5;color:#FFD54F}
+.warn b{color:#FFE500}
+#goBar{position:fixed;left:0;right:0;bottom:0;padding:12px 14px 16px;background:linear-gradient(to top,#0A0A0A 65%,rgba(10,10,10,0));z-index:50}
+#goBtn{width:100%;padding:17px;border:none;border-radius:13px;background:#00C853;color:#fff;font-size:17px;font-weight:700;box-shadow:0 6px 20px rgba(0,200,83,.3)}
+
+#display{display:none;position:fixed;inset:0;background:var(--bg);overflow:hidden}
+body.showing #panel,body.showing #goBar{display:none}
+body.showing #display{display:block}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .45s ease;padding:0 3vw}
+.scene.live{opacity:1}
+.ticker{width:100%;overflow:hidden;white-space:nowrap}
+.ticker-inner{display:inline-block;white-space:nowrap;padding-left:100%;animation:scroll var(--dur,24s) linear infinite;will-change:transform}
+@keyframes scroll{0%{transform:translate3d(0,0,0)}100%{transform:translate3d(-100%,0,0)}}
+.ticker-inner span{font-size:15vw;font-weight:700;color:var(--hl)}
+@keyframes glow{0%,100%{filter:brightness(1)}50%{filter:brightness(1.3)}}
+body.pulseOn .pulse{animation:glow 2.4s ease-in-out infinite}
+#sPrize{gap:1.2vh}
+.prize-top{font-size:5vw;font-weight:700;color:var(--ac);letter-spacing:2px}
+.prize-name{font-size:8.4vw;font-weight:700;color:var(--hl);text-align:center;line-height:1.08}
+.prize-spec{font-size:4vw;color:var(--bd);opacity:.8;text-align:center}
+.prize-worth{font-size:6.6vw;font-weight:700;color:var(--ac);margin-top:.4vh}
+#sPrice{gap:1.2vh}
+.price-head{font-size:5.4vw;font-weight:700;color:var(--ac);letter-spacing:2px}
+.price-grid{display:flex;gap:2.4vw;align-items:flex-end}
+.price-cell{background:rgba(255,255,255,.07);border-radius:2vw;padding:1.3vh 2.6vw;text-align:center;border:2px solid rgba(255,255,255,.12)}
+.price-cell.best{border-color:var(--ac);background:rgba(255,255,255,.15);padding-bottom:1.8vh}
+.price-cell .qty{font-size:3.6vw;color:var(--bd);opacity:.85}
+.price-cell .amt{font-size:8.4vw;font-weight:700;color:var(--hl);line-height:1}
+.price-cell.best .amt{color:var(--ac);font-size:10vw}
+.price-cell .was{font-size:3.2vw;color:var(--bd);opacity:.5;text-decoration:line-through}
+.price-cell .save{font-size:3vw;color:var(--ac);font-weight:700;margin-top:.3vh}
+.best-tag{font-size:2.8vw;font-weight:700;color:var(--bg);background:var(--ac);border-radius:1vw;padding:.4vh 1.6vw;display:inline-block;margin-bottom:.6vh;letter-spacing:.5px}
+#sQR{flex-direction:row;gap:4vw}
+#sQR img{height:78vh;width:78vh;max-width:46vw;background:#fff;border-radius:2vw;padding:1.2vh;object-fit:contain}
+.qr-side{display:flex;flex-direction:column;gap:1.4vh;max-width:48vw}
+.qr-head{font-size:8vw;font-weight:700;color:var(--hl);line-height:1.05}
+.qr-sub{font-size:4.2vw;color:var(--bd);opacity:.85;line-height:1.3}
+.qr-none{font-size:5vw;color:var(--bd);opacity:.6;text-align:center}
+#sGif{padding:0}
+#sGif img{max-width:100%;max-height:100%;object-fit:contain}
+.fallback{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center}
+.fb-text{font-size:9vw;font-weight:700;color:var(--hl);text-align:center;line-height:1.1}
+.ball{position:absolute;left:4vw;top:70%;width:5.5vh;height:5.5vh;border-radius:50%;background:radial-gradient(circle at 34% 30%,#fff 0%,#fff 46%,#C8C8C8 100%);box-shadow:0 0 18px rgba(255,255,255,.55);animation:drive 3.4s cubic-bezier(.22,.62,.3,1) infinite}
+@keyframes drive{0%{transform:translate(0,0) scale(1);opacity:1}70%{transform:translate(80vw,-46vh) scale(.42);opacity:1}100%{transform:translate(104vw,-28vh) scale(.2);opacity:0}}
+.hud{position:absolute;z-index:20;pointer-events:none;font-variant-numeric:tabular-nums}
+#hudTickets{top:2vh;right:2.6vw;text-align:right}
+#hudTickets .n{font-size:7vw;font-weight:700;color:var(--ac);line-height:1}
+#hudTickets .l{font-size:2.4vw;color:var(--bd);opacity:.7;letter-spacing:1.4px}
+#hudClock{top:2vh;left:2.6vw}
+#hudClock .n{font-size:5.4vw;font-weight:700;color:var(--hl);line-height:1}
+#hudClock .l{font-size:2.2vw;color:var(--bd);opacity:.7;letter-spacing:1.2px}
+#hudBatt{bottom:1.6vh;right:2.6vw;font-size:2.6vw;color:var(--bd);opacity:.45}
+#soldHit{position:absolute;left:0;bottom:0;width:26vw;height:26vh;z-index:30;background:transparent;border:none}
+#soldHit::after{content:'';position:absolute;left:2.6vw;bottom:1.6vh;width:2.4vh;height:2.4vh;border-radius:50%;background:var(--ac);opacity:.25}
+#exitHit{position:absolute;right:0;top:0;width:22vw;height:22vh;z-index:30;background:transparent;border:none}
+#flash{position:absolute;inset:0;background:#00FF88;opacity:0;z-index:40;pointer-events:none;transition:opacity .18s}
+#flash.go{opacity:.4}
+#toast{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.9);background:rgba(0,0,0,.88);color:#00FF88;padding:2vh 5vw;border-radius:2vw;font-size:6vw;font-weight:700;opacity:0;z-index:45;pointer-events:none;transition:opacity .2s,transform .2s}
+#toast.show{opacity:1;transform:translate(-50%,-50%) scale(1)}
+#soldOut{position:absolute;inset:0;z-index:55;background:var(--bg);display:none;flex-direction:column;align-items:center;justify-content:center;gap:2vh}
+#soldOut.show{display:flex}
+.so-big{font-size:16vw;font-weight:700;color:var(--ac)}
+.so-sub{font-size:5vw;color:var(--bd);opacity:.85;text-align:center}
+#rotateHint{position:fixed;inset:0;background:#0A0A0A;z-index:90;display:none;flex-direction:column;align-items:center;justify-content:center;gap:3vh;padding:6vw}
+#rotateHint.show{display:flex}
+.ph{width:16vh;height:28vh;border:4px solid #00FF88;border-radius:3vh;animation:rot 2.2s ease-in-out infinite}
+@keyframes rot{0%,40%{transform:rotate(0)}60%,100%{transform:rotate(90deg)}}
+#rotateHint p{font-size:4vh;color:#fff;text-align:center;line-height:1.4}
+</style>
+</head>
+<body class="pulseOn">
+
+<div id="panel">
+  <h1>Raffle Display</h1>
+  <p class="sub">Set it up here. Turn the phone sideways to go live.</p>
+
+  <div class="warn">
+    <b>&#9888; Do this once before the carboot</b><br>
+    Settings &#8594; Display &#8594; Sleep &#8594; <b>Never</b><br>
+    Settings &#8594; Battery &#8594; App launch &#8594; Chrome &#8594; turn off "Manage automatically", switch all three on<br>
+    Settings &#8594; Battery &#8594; turn <b>off</b> Power Saving
+  </div>
+
+  <div class="card">
+    <h2>Background</h2>
+    <div class="theme-grid">
+      <div class="theme-opt theme-a active" data-theme="A">NIGHT<span>black box</span></div>
+      <div class="theme-opt theme-b" data-theme="B">DAY<span>white table</span></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Tickets Left</h2>
+    <div class="ticket-box">
+      <div class="ticket-num" id="tNum">500</div>
+      <div class="ticket-lbl">OF <span id="tTot">500</span> REMAINING</div>
+    </div>
+    <div class="ticket-ctl">
+      <button id="bMinus">&minus;1</button>
+      <button class="sold" id="bSold">SOLD</button>
+      <button id="bPlus">+1</button>
+    </div>
+    <button class="undo" id="bUndo">&#8630; Undo last</button>
+    <label>Total tickets</label>
+    <input type="text" id="iTotal" inputmode="numeric" value="500">
+    <button class="btn btn-dark" id="bReset" style="margin-top:10px">Reset to full</button>
+  </div>
+
+  <div class="card">
+    <h2>Scrolling Message</h2>
+    <textarea id="iMsg">&#9733; WIN A BRAND NEW TAYLORMADE SIM2 MAX DRIVER &#9733; WORTH &pound;279 &#9733; 5 TICKETS FOR &pound;5 &#9733; FREE DELIVERY TO YOUR DOOR &#9733; DRAWN 1PM &#9733;</textarea>
+    <label>Scroll speed</label>
+    <div class="slider-row">
+      <input type="range" id="sSpeed" min="10" max="45" value="24">
+      <div class="slider-val" id="vSpeed">24s</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>The Prize</h2>
+    <label>Headline</label>
+    <input type="text" id="iPrizeName" value="TAYLORMADE SIM2 MAX DRIVER">
+    <label>Spec line</label>
+    <input type="text" id="iPrizeSpec" value="10.5&deg; LOFT &middot; REGULAR SHAFT &middot; RIGHT HANDED">
+    <label>Value line</label>
+    <input type="text" id="iPrizeWorth" value="WORTH &pound;279 &middot; BRAND NEW">
+  </div>
+
+  <div class="card">
+    <h2>Ticket Prices</h2>
+    <label>Single ticket</label>
+    <input type="text" id="iP1" value="&pound;2">
+    <label>3 tickets</label>
+    <input type="text" id="iP3" value="&pound;4.50">
+    <label>5 tickets (best value)</label>
+    <input type="text" id="iP5" value="&pound;5">
+    <label>Badge on the 5-ticket deal</label>
+    <input type="text" id="iBadge" value="BEST VALUE &middot; &pound;1 EACH">
+    <p style="font-size:12px;color:#777;margin-top:10px;line-height:1.4">The 5-pack shows a crossed-out &pound;10 so people see the saving straight away.</p>
+  </div>
+
+  <div class="card">
+    <h2>Draw Time</h2>
+    <input type="time" id="iDraw" value="13:00">
+    <div class="toggle-row" style="margin-top:12px">
+      <div class="t-label">Show countdown<small>Top left of the display</small></div>
+      <div class="switch on" id="swClock"></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Payment QR Code</h2>
+    <label class="upload" id="upQR">
+      <span id="upQRtxt">Tap to choose QR image</span>
+      <input type="file" id="fQR" accept="image/*">
+    </label>
+    <div class="preview" id="pvQR"><img id="imgQR" alt=""><br>
+      <span class="clear-link" id="clrQR">Remove</span></div>
+    <label>Heading next to QR</label>
+    <input type="text" id="iQRhead" value="SCAN TO PAY">
+    <label>Line underneath</label>
+    <input type="text" id="iQRsub" value="Then see me for your ticket numbers">
+  </div>
+
+  <div class="card">
+    <h2>Animation</h2>
+    <label class="upload" id="upGif">
+      <span id="upGiftxt">Tap to choose GIF (under 2MB)</span>
+      <input type="file" id="fGif" accept="image/*">
+    </label>
+    <div class="preview" id="pvGif"><img id="imgGif" alt=""><br>
+      <span class="clear-link" id="clrGif">Remove</span></div>
+    <label>Words if no GIF loaded</label>
+    <input type="text" id="iGifTxt" value="300 YARDS. EASY.">
+  </div>
+
+  <div class="card">
+    <h2>How Long Each Screen Shows</h2>
+    <label>Scrolling message</label>
+    <div class="slider-row"><input type="range" id="dMsg" min="4" max="40" value="16">
+      <div class="slider-val" id="vMsg">16s</div></div>
+    <label>The prize</label>
+    <div class="slider-row"><input type="range" id="dPrize" min="0" max="30" value="8">
+      <div class="slider-val" id="vPrize">8s</div></div>
+    <label>Ticket prices</label>
+    <div class="slider-row"><input type="range" id="dPrice" min="0" max="30" value="9">
+      <div class="slider-val" id="vPrice">9s</div></div>
+    <label>Animation</label>
+    <div class="slider-row"><input type="range" id="dGif" min="0" max="20" value="5">
+      <div class="slider-val" id="vGif">5s</div></div>
+    <label>QR code</label>
+    <div class="slider-row"><input type="range" id="dQR" min="0" max="40" value="10">
+      <div class="slider-val" id="vQR">10s</div></div>
+    <p style="font-size:12px;color:#777;margin-top:8px">Set any slider to 0 to skip that screen.</p>
+  </div>
+
+  <div class="card">
+    <h2>Options</h2>
+    <div class="toggle-row">
+      <div class="t-label">Gentle pulse<small>Catches the eye from a distance</small></div>
+      <div class="switch on" id="swPulse"></div></div>
+    <div class="toggle-row">
+      <div class="t-label">Show tickets left<small>Top right corner</small></div>
+      <div class="switch on" id="swTickets"></div></div>
+    <div class="toggle-row">
+      <div class="t-label">Show battery<small>Small, bottom right</small></div>
+      <div class="switch on" id="swBatt"></div></div>
+  </div>
+</div>
+
+<div id="goBar"><button id="goBtn">Turn phone sideways to go live</button></div>
+
+<div id="display">
+  <div class="scene" id="sMsg">
+    <div class="ticker"><div class="ticker-inner"><span id="dMsgTxt"></span></div></div>
+  </div>
+
+  <div class="scene" id="sPrize">
+    <div class="prize-top pulse">WIN THIS</div>
+    <div class="prize-name" id="dPrizeName"></div>
+    <div class="prize-spec" id="dPrizeSpec"></div>
+    <div class="prize-worth" id="dPrizeWorth"></div>
+  </div>
+
+  <div class="scene" id="sPrice">
+    <div class="price-head">TICKETS</div>
+    <div class="price-grid">
+      <div class="price-cell">
+        <div class="qty">1 TICKET</div>
+        <div class="amt" id="dP1"></div>
+      </div>
+      <div class="price-cell">
+        <div class="qty">3 TICKETS</div>
+        <div class="amt" id="dP3"></div>
+        <div class="save">SAVE 50p</div>
+      </div>
+      <div class="price-cell best">
+        <div class="best-tag pulse" id="dBadge"></div>
+        <div class="qty">5 TICKETS</div>
+        <div class="was" id="dWas"></div>
+        <div class="amt" id="dP5"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scene" id="sGif">
+    <img id="dGifImg" alt="" style="display:none">
+    <div class="fallback" id="dFallback">
+      <div class="fb-text" id="dGifTxt"></div>
+      <div class="ball"></div>
+    </div>
+  </div>
+
+  <div class="scene" id="sQR">
+    <img id="dQRimg" alt="Payment QR code" style="display:none">
+    <div class="qr-side">
+      <div class="qr-head pulse" id="dQRhead"></div>
+      <div class="qr-sub" id="dQRsub"></div>
+    </div>
+  </div>
+
+  <div class="hud" id="hudClock"><div class="n" id="clockN">--:--</div><div class="l">UNTIL DRAW</div></div>
+  <div class="hud" id="hudTickets"><div class="n" id="hudTnum">500</div><div class="l">TICKETS LEFT</div></div>
+  <div class="hud" id="hudBatt">&mdash;</div>
+
+  <button id="soldHit" aria-label="Log a sale"></button>
+  <button id="exitHit" aria-label="Back to settings"></button>
+  <div id="flash"></div>
+  <div id="toast"></div>
+
+  <div id="soldOut">
+    <div class="so-big pulse">SOLD OUT</div>
+    <div class="so-sub" id="soSub">All tickets gone &mdash; draw at 1PM</div>
+  </div>
+</div>
+
+<div id="rotateHint">
+  <div class="ph"></div>
+  <p>Turn the phone <b style="color:#00FF88">upright</b><br>to change settings</p>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+var $ = function(id){ return document.getElementById(id); };
+
+/* ---------- DEFAULTS ---------- */
+var DEF = {
+  theme:'A', total:500, left:500,
+  msg:'\u2605 WIN A BRAND NEW TAYLORMADE SIM2 MAX DRIVER \u2605 WORTH \u00A3279 \u2605 5 TICKETS FOR \u00A35 \u2605 FREE DELIVERY TO YOUR DOOR \u2605 DRAWN 1PM \u2605',
+  speed:24,
+  prizeName:'TAYLORMADE SIM2 MAX DRIVER',
+  prizeSpec:'10.5\u00B0 LOFT \u00B7 REGULAR SHAFT \u00B7 RIGHT HANDED',
+  prizeWorth:'WORTH \u00A3279 \u00B7 BRAND NEW',
+  p1:'\u00A32', p3:'\u00A34.50', p5:'\u00A35',
+  badge:'BEST VALUE \u00B7 \u00A31 EACH',
+  draw:'13:00',
+  qrHead:'SCAN TO PAY', qrSub:'Then see me for your ticket numbers',
+  gifTxt:'300 YARDS. EASY.',
+  qrData:'', gifData:'',
+  dMsg:16, dPrize:8, dPrice:9, dGif:5, dQR:10,
+  pulse:true, showTickets:true, showBatt:true, showClock:true
+};
+
+var S = {};
+try {
+  var raw = localStorage.getItem('raffleApp');
+  var saved = raw ? JSON.parse(raw) : {};
+  for (var k in DEF) { S[k] = (saved[k] !== undefined) ? saved[k] : DEF[k]; }
+} catch(e) {
+  for (var k2 in DEF) { S[k2] = DEF[k2]; }
+}
+
+var saveT = null;
+function save(){
+  clearTimeout(saveT);
+  saveT = setTimeout(function(){
+    try { localStorage.setItem('raffleApp', JSON.stringify(S)); }
+    catch(e){ alert('Could not save \u2014 your GIF may be too large. Try one under 2MB.'); }
+  }, 300);
+}
+
+var undoStack = [];
+
+/* ---------- THEME ---------- */
+function applyTheme(){
+  document.body.classList.toggle('themeB', S.theme === 'B');
+  var opts = document.querySelectorAll('.theme-opt');
+  for (var i=0;i<opts.length;i++){
+    opts[i].classList.toggle('active', opts[i].getAttribute('data-theme') === S.theme);
+  }
+  var m = document.querySelector('meta[name=theme-color]');
+  if (m) m.content = (S.theme === 'B') ? '#00703C' : '#0A0A0A';
+}
+(function(){
+  var opts = document.querySelectorAll('.theme-opt');
+  for (var i=0;i<opts.length;i++){
+    (function(el){
+      el.addEventListener('click', function(){
+        S.theme = el.getAttribute('data-theme');
+        applyTheme(); save();
+      });
+    })(opts[i]);
+  }
+})();
+
+/* ---------- TICKETS ---------- */
+function paintTickets(){
+  $('tNum').textContent = S.left;
+  $('tTot').textContent = S.total;
+  $('hudTnum').textContent = S.left;
+  $('soldOut').classList.toggle('show', S.left <= 0);
+  $('soSub').innerHTML = 'All tickets gone &mdash; draw at ' + fmtDraw();
+}
+function setLeft(n, remember){
+  if (remember) { undoStack.push(S.left); if (undoStack.length > 30) undoStack.shift(); }
+  S.left = Math.max(0, Math.min(S.total, n));
+  paintTickets(); save();
+}
+function buzz(ms){ if (navigator.vibrate) { try { navigator.vibrate(ms || 40); } catch(e){} } }
+
+$('bMinus').addEventListener('click', function(){ setLeft(S.left - 1, true); buzz(); });
+$('bPlus').addEventListener('click',  function(){ setLeft(S.left + 1, true); buzz(); });
+$('bSold').addEventListener('click',  function(){ setLeft(S.left - 1, true); buzz(60); });
+$('bUndo').addEventListener('click',  function(){
+  if (undoStack.length) { S.left = undoStack.pop(); paintTickets(); save(); buzz(); }
+});
+$('bReset').addEventListener('click', function(){
+  if (confirm('Reset tickets back to ' + S.total + '?')) { setLeft(S.total, true); }
+});
+$('iTotal').addEventListener('input', function(e){
+  var v = parseInt(e.target.value.replace(/\D/g,''), 10) || 0;
+  S.total = v; if (S.left > v) S.left = v;
+  paintTickets(); save();
+});
+
+/* ---------- TEXT FIELDS ---------- */
+function field(inputId, key, after){
+  var el = $(inputId);
+  el.value = S[key];
+  el.addEventListener('input', function(){
+    S[key] = el.value; paintDisplay(); if (after) after(); save();
+  });
+}
+field('iMsg','msg');
+field('iPrizeName','prizeName');
+field('iPrizeSpec','prizeSpec');
+field('iPrizeWorth','prizeWorth');
+field('iP1','p1');
+field('iP3','p3');
+field('iP5','p5');
+field('iBadge','badge');
+field('iQRhead','qrHead');
+field('iQRsub','qrSub');
+field('iGifTxt','gifTxt');
+field('iDraw','draw', paintClock);
+
+/* ---------- SLIDERS ---------- */
+function slider(rangeId, valId, key, after){
+  var el = $(rangeId), lbl = $(valId);
+  el.value = S[key];
+  lbl.textContent = S[key] + 's';
+  el.addEventListener('input', function(){
+    S[key] = parseInt(el.value, 10);
+    lbl.textContent = S[key] + 's';
+    if (after) after();
+    save();
+  });
+}
+slider('sSpeed','vSpeed','speed', function(){
+  $('sMsg').style.setProperty('--dur', S.speed + 's');
+});
+slider('dMsg','vMsg','dMsg', buildPlaylist);
+slider('dPrize','vPrize','dPrize', buildPlaylist);
+slider('dPrice','vPrice','dPrice', buildPlaylist);
+slider('dGif','vGif','dGif', buildPlaylist);
+slider('dQR','vQR','dQR', buildPlaylist);
+
+/* ---------- TOGGLES ---------- */
+function toggle(swId, key, after){
+  var el = $(swId);
+  el.classList.toggle('on', !!S[key]);
+  el.addEventListener('click', function(){
+    S[key] = !S[key];
+    el.classList.toggle('on', !!S[key]);
+    if (after) after();
+    save();
+  });
+}
+toggle('swPulse','pulse', function(){
+  document.body.classList.toggle('pulseOn', S.pulse);
+});
+toggle('swTickets','showTickets', paintHud);
+toggle('swBatt','showBatt', paintHud);
+toggle('swClock','showClock', paintHud);
+
+/* ---------- FILE UPLOADS ---------- */
+function hookUpload(fileId, key, boxId, txtId, prevId, imgId, clearId, idleText){
+  function paint(){
+    var has = !!S[key];
+    $(boxId).classList.toggle('has', has);
+    $(txtId).textContent = has ? 'Loaded \u2014 tap to change' : idleText;
+    $(prevId).classList.toggle('show', has);
+    if (has) $(imgId).src = S[key];
+  }
+  $(fileId).addEventListener('change', function(e){
+    var f = e.target.files[0];
+    if (!f) return;
+    if (f.size > 3 * 1024 * 1024) {
+      alert('That file is ' + (f.size/1048576).toFixed(1) + 'MB.\n\nThis phone will struggle. Please use one under 2MB.');
+      e.target.value = ''; return;
+    }
+    var r = new FileReader();
+    r.onload = function(ev){
+      S[key] = ev.target.result;
+      paint(); paintDisplay(); save();
+    };
+    r.readAsDataURL(f);
+  });
+  $(clearId).addEventListener('click', function(){
+    S[key] = ''; $(fileId).value = '';
+    paint(); paintDisplay(); save();
+  });
+  paint();
+}
+hookUpload('fQR','qrData','upQR','upQRtxt','pvQR','imgQR','clrQR','Tap to choose QR image');
+hookUpload('fGif','gifData','upGif','upGiftxt','pvGif','imgGif','clrGif','Tap to choose GIF (under 2MB)');
+
+/* ---------- PAINT THE DISPLAY ---------- */
+function paintDisplay(){
+  $('dMsgTxt').textContent    = S.msg;
+  $('dPrizeName').textContent = S.prizeName;
+  $('dPrizeSpec').textContent = S.prizeSpec;
+  $('dPrizeWorth').textContent= S.prizeWorth;
+  $('dP1').textContent        = S.p1;
+  $('dP3').textContent        = S.p3;
+  $('dP5').textContent        = S.p5;
+  $('dBadge').textContent     = S.badge;
+  $('dQRhead').textContent    = S.qrHead;
+  $('dQRsub').textContent     = S.qrSub;
+  $('dGifTxt').textContent    = S.gifTxt;
+  $('sMsg').style.setProperty('--dur', S.speed + 's');
+
+  /* crossed-out anchor price: 5 x single price */
+  var single = parseFloat(String(S.p1).replace(/[^0-9.]/g,'')) || 0;
+  $('dWas').textContent = single ? '\u00A3' + (single * 5).toFixed(2).replace(/\.00$/,'') : '';
+
+  /* QR */
+  if (S.qrData) {
+    $('dQRimg').src = S.qrData;
+    $('dQRimg').style.display = '';
+  } else {
+    $('dQRimg').style.display = 'none';
+  }
+
+  /* GIF */
+  if (S.gifData) {
+    $('dGifImg').src = S.gifData;
+    $('dGifImg').style.display = '';
+    $('dFallback').style.display = 'none';
+  } else {
+    $('dGifImg').style.display = 'none';
+    $('dFallback').style.display = '';
+  }
+}
+
+function paintHud(){
+  $('hudTickets').style.display = S.showTickets ? '' : 'none';
+  $('hudBatt').style.display    = S.showBatt ? '' : 'none';
+  $('hudClock').style.display   = S.showClock ? '' : 'none';
+}
+
+/* ---------- COUNTDOWN ---------- */
+function fmtDraw(){
+  var p = S.draw.split(':');
+  var h = parseInt(p[0],10), m = p[1];
+  var ap = h >= 12 ? 'PM' : 'AM';
+  var h12 = h % 12; if (h12 === 0) h12 = 12;
+  return (m === '00') ? (h12 + ap) : (h12 + ':' + m + ap);
+}
+function paintClock(){
+  if (!S.showClock) return;
+  var now = new Date();
+  var p = S.draw.split(':');
+  var target = new Date();
+  target.setHours(parseInt(p[0],10), parseInt(p[1],10), 0, 0);
+  var diff = target - now;
+
+  if (diff <= 0) {
+    $('clockN').textContent = fmtDraw();
+    $('hudClock').querySelector('.l').textContent = 'DRAW TIME';
+    return;
+  }
+  var mins = Math.floor(diff / 60000);
+  var hrs = Math.floor(mins / 60);
+  var rem = mins % 60;
+  var secs = Math.floor((diff % 60000) / 1000);
+
+  if (hrs > 0) {
+    $('clockN').textContent = hrs + 'h ' + (rem < 10 ? '0' : '') + rem + 'm';
+  } else {
+    $('clockN').textContent = rem + ':' + (secs < 10 ? '0' : '') + secs;
+  }
+  $('hudClock').querySelector('.l').textContent = 'UNTIL DRAW';
+}
+setInterval(paintClock, 1000);
+
+/* ---------- BATTERY ---------- */
+function initBattery(){
+  if (!navigator.getBattery) { $('hudBatt').textContent = ''; return; }
+  navigator.getBattery().then(function(b){
+    function upd(){
+      $('hudBatt').textContent = Math.round(b.level * 100) + '%' + (b.charging ? ' \u26A1' : '');
+    }
+    upd();
+    b.addEventListener('levelchange', upd);
+    b.addEventListener('chargingchange', upd);
+  }).catch(function(){ $('hudBatt').textContent = ''; });
+}
+initBattery();
+
+/* ---------- PLAYLIST ---------- */
+var scenes = [];
+var idx = 0;
+var sceneTimer = null;
+
+function buildPlaylist(){
+  scenes = [];
+  if (S.dMsg   > 0) scenes.push({el:'sMsg',   dur:S.dMsg});
+  if (S.dPrize > 0) scenes.push({el:'sPrize', dur:S.dPrize});
+  if (S.dPrice > 0) scenes.push({el:'sPrice', dur:S.dPrice});
+  if (S.dGif   > 0) scenes.push({el:'sGif',   dur:S.dGif});
+  if (S.dQR    > 0) scenes.push({el:'sQR',    dur:S.dQR});
+  if (!scenes.length) scenes.push({el:'sMsg', dur:16});
+  if (idx >= scenes.length) idx = 0;
+}
+
+function showScene(i){
+  var all = document.querySelectorAll('.scene');
+  for (var j=0;j<all.length;j++) all[j].classList.remove('live');
+  var s = scenes[i];
+  if (!s) return;
+  $(s.el).classList.add('live');
+}
+
+function runLoop(){
+  clearTimeout(sceneTimer);
+  if (!document.body.classList.contains('showing')) return;
+  showScene(idx);
+  var dur = scenes[idx] ? scenes[idx].dur : 10;
+  sceneTimer = setTimeout(function(){
+    idx = (idx + 1) % scenes.length;
+    runLoop();
+  }, dur * 1000);
+}
+
+/* ---------- WAKE LOCK ---------- */
+var wakeLock = null;
+function requestWake(){
+  if (!('wakeLock' in navigator)) return;
+  navigator.wakeLock.request('screen').then(function(wl){
+    wakeLock = wl;
+    wl.addEventListener('release', function(){ wakeLock = null; });
+  }).catch(function(){});
+}
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState === 'visible' && document.body.classList.contains('showing')) {
+    requestWake();
+  }
+});
+
+/* ---------- MODE SWITCHING ---------- */
+function isLandscape(){
+  return window.innerWidth > window.innerHeight;
+}
+function updateMode(){
+  var land = isLandscape();
+  document.body.classList.toggle('showing', land);
+  $('rotateHint').classList.remove('show');
+  if (land) {
+    buildPlaylist();
+    paintDisplay();
+    paintHud();
+    paintTickets();
+    paintClock();
+    requestWake();
+    runLoop();
+  } else {
+    clearTimeout(sceneTimer);
+    if (wakeLock) { try { wakeLock.release(); } catch(e){} wakeLock = null; }
+  }
+}
+window.addEventListener('resize', updateMode);
+window.addEventListener('orientationchange', function(){ setTimeout(updateMode, 220); });
+
+$('goBtn').addEventListener('click', function(){
+  if (isLandscape()) { updateMode(); }
+  else { alert('Turn the phone sideways \u2014 the display starts on its own.'); }
+});
+
+/* ---------- IN-DISPLAY CONTROLS ---------- */
+$('soldHit').addEventListener('click', function(ev){
+  ev.stopPropagation();
+  if (S.left <= 0) return;
+  setLeft(S.left - 1, true);
+  buzz(60);
+  var f = $('flash');
+  f.classList.add('go');
+  setTimeout(function(){ f.classList.remove('go'); }, 180);
+  var t = $('toast');
+  t.textContent = S.left + ' LEFT';
+  t.classList.add('show');
+  setTimeout(function(){ t.classList.remove('show'); }, 900);
+});
+
+/* exit = double tap top-right */
+var lastExit = 0;
+$('exitHit').addEventListener('click', function(ev){
+  ev.stopPropagation();
+  var now = Date.now();
+  if (now - lastExit < 600) {
+    $('rotateHint').classList.add('show');
+    setTimeout(function(){ $('rotateHint').classList.remove('show'); }, 2600);
+    lastExit = 0;
+  } else {
+    lastExit = now;
+  }
+});
+
+/* double-tap anywhere = switch theme */
+var lastTap = 0;
+$('display').addEventListener('click', function(){
+  var now = Date.now();
+  if (now - lastTap < 400) {
+    S.theme = (S.theme === 'A') ? 'B' : 'A';
+    applyTheme(); save();
+    var t = $('toast');
+    t.textContent = (S.theme === 'A') ? 'NIGHT' : 'DAY';
+    t.classList.add('show');
+    setTimeout(function(){ t.classList.remove('show'); }, 700);
+    lastTap = 0;
+  } else {
+    lastTap = now;
+  }
+});
+
+/* ---------- START ---------- */
+applyTheme();
+document.body.classList.toggle('pulseOn', S.pulse);
+paintTickets();
+paintDisplay();
+paintHud();
+paintClock();
+buildPlaylist();
+updateMode();
+
+})();
+</script>
+</body>
+</html>
